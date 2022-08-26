@@ -75,7 +75,8 @@ function appendArticlesMarkup(result) {
     .join("");
     
        refs.gallery.insertAdjacentHTML('beforeend', markup);
-   let lightbox = new SimpleLightbox('.gallery a');
+       let lightbox = new SimpleLightbox('.gallery a');
+       loadMoreBtn.hide();
        Notiflix.Notify.info("We're sorry, but you've reached the end of search results."); 
      } else {
             const markup = result

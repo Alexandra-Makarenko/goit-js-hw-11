@@ -10,13 +10,18 @@ body {
   background-color: #fafafa;
   color: #212121;
   line-height: 1.5;
+  text-align: center;
 }
 a{
   display: flex;
   width: calc(100% / 4);
-  border: 1px solid rgb(106, 142, 225);
-  text-decoration: none;
 
+  text-decoration: none;
+  color: black;
+
+}
+a:hover{
+  border: 1px solid rgb(106, 142, 225);
 }
 .search-form{
   position: fixed;
@@ -25,6 +30,10 @@ a{
   text-align: center;
   background-color: rgb(106, 142, 225);
    padding: 5px;
+}
+button{
+  background-color: whitesmoke;
+  border: 1px solid rgb(106, 142, 225);
 }
 button.is-hidden {
   display: none;
