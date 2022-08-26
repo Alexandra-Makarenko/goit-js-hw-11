@@ -1,0 +1,9 @@
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.photo-card {
+    width: calc(100% / 4);
+    border: 1px solid gray;
+}

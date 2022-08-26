@@ -1,70 +1,114 @@
 import './css/styles.css';
 import Notiflix from 'notiflix';
-var debounce = require('lodash.debounce');
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+import LoadMoreBtn from './js/load-more';
 
-const DEBOUNCE_DELAY = 300;
 
-import NewsApiService from './js/fetchCountries';
+import NewsApiService from './js/fetch-photos';
 
 
 const refs = {
-  searchForm: document.querySelector('[id="search-box"]'),
-  countryContainer: document.querySelector('.country-list'),
+  searchForm: document.querySelector('.search-form'),
+  gallery: document.querySelector('.gallery'),
+  input: document.querySelector('.search-form input'),
 };
+
+const loadMoreBtn = new LoadMoreBtn({
+  selector: '.load-more',
+  hidden: true,
+});
 
 
 const newsApiService = new NewsApiService();
 
-refs.searchForm.addEventListener('input', debounce((onSearch),DEBOUNCE_DELAY));
+refs.searchForm.addEventListener('submit', (onSearch));
+loadMoreBtn.refs.button.addEventListener('click', fetchArticles);
 
 function onSearch(e) {
   e.preventDefault();
-    newsApiService.query = refs.searchForm.value.trim();
+    newsApiService.query = refs.input.value.trim();
     console.log(newsApiService.query);
 
-    if (newsApiService.query === '') {
+  if (newsApiService.query === '') {
         clearArticlesContainer()
         return
-    };
-    
+    };    
+
+  newsApiService.resetPage();
   clearArticlesContainer();
-  fetchArticles();    
+  fetchArticles();   
 }
 
 function fetchArticles() {
-    newsApiService.fetchArticles().then(names => {
-    appendArticlesMarkup(names);
+  loadMoreBtn.disable();
+    newsApiService.fetchArticles().then(result => {
+      appendArticlesMarkup(result);
+      loadMoreBtn.enable();
   });
 }
 
-function appendArticlesMarkup(names) {
-     if (names.length > 10) {
-          Notiflix.Notify.info('Too many matches found. Please enter a more specific name.');
-     } else if(names.length >=2 && names.length <=10){
-            const markup = names
-    .map((name) => {
-      return `<li><img src=${name.flags.svg}><span class = 'title'>${name.name.common}</span></li>`;
+function appendArticlesMarkup(result) {
+     if (result.length < 1) {
+           Notiflix.Notify.warning('Sorry, there are no images matching your search query. Please try again.'); 
+   } else if(result.length < 40){
+            const markup = result
+    .map((item) => {
+      return `<a href="${item.largeImageURL}"><div class="photo-card">
+  <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
+  <div class="info">
+    <p class="info-item">
+      <b>Likes<br>${item.likes}</b>
+    </p>
+    <p class="info-item">
+      <b>Views<br>${item.views}</b>
+    </p>
+    <p class="info-item">
+      <b>Comments<br>${item.comments}</b>
+    </p>
+    <p class="info-item">
+      <b>Downloads<br>${item.downloads}</b>
+    </p>
+  </div>
+</div></a>`;
     })
     .join("");
     
-    refs.countryContainer.insertAdjacentHTML('beforeend', markup);
+       refs.gallery.insertAdjacentHTML('beforeend', markup);
+   let lightbox = new SimpleLightbox('.gallery a');
+       Notiflix.Notify.info("We're sorry, but you've reached the end of search results."); 
      } else {
-           const markup = names
-    .map((name) => {
-      return `<li><img src=${name.flags.svg}><span class='title'>${name.name.official}</span></li>
-          <li><b>Capital</b>: ${name.capital}</li>
-          <li><b>Population</b>: ${name.population}</li>
-          <li><b>Languages</b>: ${Object.values(name.languages).join(', ')}</li>`;
+            const markup = result
+    .map((item) => {
+      return `<a href="${item.largeImageURL}"><div class="photo-card">
+  <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
+  <div class="info">
+    <p class="info-item">
+      <b>Likes<br>${item.likes}</b>
+    </p>
+    <p class="info-item">
+      <b>Views<br>${item.views}</b>
+    </p>
+    <p class="info-item">
+      <b>Comments<br>${item.comments}</b>
+    </p>
+    <p class="info-item">
+      <b>Downloads<br>${item.downloads}</b>
+    </p>
+  </div>
+</div></a>`;
     })
     .join("");
     
-    refs.countryContainer.insertAdjacentHTML('beforeend', markup);
-        }
-     
-    console.log(names);
+       refs.gallery.insertAdjacentHTML('beforeend', markup);
+       let lightbox = new SimpleLightbox('.gallery a');
+         loadMoreBtn.show();
+     }     
+    console.log(result);
 }
 
 
 function clearArticlesContainer() {
-  refs.countryContainer.innerHTML = '';
+  refs.gallery.innerHTML = '';
+  loadMoreBtn.hide();
 }
